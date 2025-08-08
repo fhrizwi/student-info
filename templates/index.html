@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Information System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-graduation-cap text-3xl text-blue-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h1 class="text-2xl font-bold text-gray-900">Student Information System</h1>
+                        <p class="text-sm text-gray-500">Hierarchical Access Control Management</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="userInfo" class="hidden">
+                        <span class="text-sm text-gray-600">Welcome, </span>
+                        <span id="userName" class="font-semibold text-blue-600"></span>
+                        <span class="text-sm text-gray-500">(</span>
+                        <span id="userType" class="text-sm font-medium text-gray-700"></span>
+                        <span class="text-sm text-gray-500">)</span>
+                    </div>
+                    <button id="logoutBtn" onclick="logout()" class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex space-x-8 py-4">
+                <button onclick="showPublicView()" class="nav-btn active bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-users mr-2"></i>Public View
+                </button>
+                <button onclick="showLogin()" class="nav-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </button>
+                <button onclick="showHODControls()" id="hodBtn" class="nav-btn hidden bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-user-tie mr-2"></i>HOD Controls
+                </button>
+                <button onclick="showFacultyControls()" id="facultyBtn" class="nav-btn hidden bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i>Faculty Controls
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Login Section -->
+        <div id="loginSection" class="hidden max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
+            <div class="text-center mb-8">
+                <i class="fas fa-lock text-4xl text-blue-600 mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-900">Login</h2>
+                <p class="text-gray-600">Access your account</p>
+            </div>
+            
+            <form class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                </div>
+                
+                <button type="button" onclick="login()" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </button>
+            </form>
+            
+            <div id="loginMessage" class="mt-4"></div>
+            
+            <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Demo Credentials:</h3>
+                <div class="text-xs text-gray-600 space-y-1">
+                    <div><strong>HOD:</strong> hod@example.com / hod123</div>
+                    <div><strong>Faculty:</strong> faculty@example.com / faculty123</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Section -->
+        <div id="studentsSection">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <i class="fas fa-users text-2xl text-blue-600 mr-3"></i>
+                    <h2 class="text-2xl font-bold text-gray-900">Students</h2>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="loadStudents()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div id="studentsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="text-center text-gray-500 py-12">
+                    <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+                    <p>Loading students...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- HOD Controls -->
+        <div id="hodControls" class="hidden space-y-8">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-user-tie text-2xl text-green-600 mr-3"></i>
+                    <h2 class="text-2xl font-bold text-gray-900">HOD Controls</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Add Student -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Add New Student</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                                <input type="number" id="newStudentId" placeholder="Enter Student ID" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <input type="text" id="newStudentName" placeholder="Enter Full Name" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                                <input type="text" id="newStudentMobile" placeholder="Enter Mobile Number" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                                <select id="newStudentDept" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                </select>
+                            </div>
+                            <button onclick="addStudent()" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                <i class="fas fa-plus mr-2"></i>Add Student
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Direct Suspension -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Direct Suspension</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                                <input type="number" id="suspendStudentId" placeholder="Enter Student ID" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Suspension Reason</label>
+                                <textarea id="suspendReason" placeholder="Enter suspension reason" rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <button onclick="suspendStudent()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                <i class="fas fa-ban mr-2"></i>Suspend Student
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pending Requests -->
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-clock text-2xl text-yellow-600 mr-3"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">Pending Requests</h3>
+                </div>
+                <div id="pendingRequests" class="space-y-4">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                        <p>Loading requests...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Faculty Controls -->
+        <div id="facultyControls" class="hidden space-y-8">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-chalkboard-teacher text-2xl text-purple-600 mr-3"></i>
+                    <h2 class="text-2xl font-bold text-gray-900">Faculty Controls</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Request Suspension -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Request Suspension</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                                <input type="number" id="requestSuspendId" placeholder="Enter Student ID" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Suspension Reason</label>
+                                <textarea id="requestReason" placeholder="Enter suspension reason" rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <button onclick="requestSuspension()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                <i class="fas fa-paper-plane mr-2"></i>Request Suspension
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- My Requests -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-900">My Requests</h3>
+                        <div id="myRequests" class="space-y-4">
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                <p>Loading requests...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        let currentUser = null;
+        let currentToken = null;
+        
+        // API Base URL
+        const API_BASE = 'http://localhost:5000/api';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStudents();
+        });
+        
+        // Navigation functions
+        function showPublicView() {
+            updateNavButtons(event.target);
+            hideAllSections();
+            loadStudents();
+        }
+        
+        function showLogin() {
+            updateNavButtons(event.target);
+            hideAllSections();
+            document.getElementById('loginSection').classList.remove('hidden');
+        }
+        
+        function showHODControls() {
+            hideAllSections();
+            document.getElementById('hodControls').classList.remove('hidden');
+            document.getElementById('facultyControls').classList.add('hidden');
+            updateNavButtons(event.target);
+            loadPendingRequests();
+        }
+        
+        function showFacultyControls() {
+            hideAllSections();
+            document.getElementById('facultyControls').classList.remove('hidden');
+            document.getElementById('hodControls').classList.add('hidden');
+            updateNavButtons(event.target);
+            loadMyRequests();
+        }
+        
+        function updateNavButtons(activeButton) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            activeButton.classList.remove('bg-gray-100', 'text-gray-700');
+            activeButton.classList.add('active', 'bg-blue-600', 'text-white');
+        }
+        
+        function hideAllSections() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('hodControls').classList.add('hidden');
+            document.getElementById('facultyControls').classList.add('hidden');
+        }
+        
+        // HOD functions
+        async function addStudent() {
+            const studentData = {
+                student_id: parseInt(document.getElementById('newStudentId').value),
+                full_name: document.getElementById('newStudentName').value,
+                mobile_number: document.getElementById('newStudentMobile').value,
+                department: document.getElementById('newStudentDept').value,
+                section: 'A',
+                gender: 'Male',
+                batch_year: 2024,
+                father_name: 'N/A',
+                address: 'N/A'
+            };
+            
+            if (!studentData.student_id || !studentData.full_name) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/hod/students`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify(studentData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast('Student added successfully!', 'success');
+                    loadStudents();
+                    // Clear form
+                    document.getElementById('newStudentId').value = '';
+                    document.getElementById('newStudentName').value = '';
+                    document.getElementById('newStudentMobile').value = '';
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Error adding student: ' + error.message, 'error');
+            }
+        }
+        
+        async function suspendStudent() {
+            const studentId = document.getElementById('suspendStudentId').value;
+            const reason = document.getElementById('suspendReason').value;
+            
+            if (!studentId || !reason) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/hod/suspend/${studentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ reason })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast('Student suspended successfully!', 'success');
+                    loadStudents();
+                    // Clear form
+                    document.getElementById('suspendStudentId').value = '';
+                    document.getElementById('suspendReason').value = '';
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Error suspending student: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadPendingRequests() {
+            try {
+                const response = await fetch(`${API_BASE}/hod/requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayPendingRequests(data.requests);
+                } else {
+                    showToast('Failed to load requests', 'error');
+                }
+            } catch (error) {
+                showToast('Error loading requests: ' + error.message, 'error');
+            }
+        }
+        
+        function displayPendingRequests(requests) {
+            const container = document.getElementById('pendingRequests');
+            container.innerHTML = '';
+            
+            if (requests.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-check-circle text-2xl mb-2"></i>
+                        <p>No pending requests</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            requests.forEach(request => {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-50 rounded-lg p-4 border-l-4 border-yellow-500';
+                div.innerHTML = `
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${request.student_name} (ID: ${request.student_id})</h4>
+                            <p class="text-sm text-gray-600">Requested by: ${request.requested_by_faculty}</p>
+                        </div>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">PENDING</span>
+                    </div>
+                    <p class="text-sm text-gray-700 mb-3">${request.suspension_reason}</p>
+                    <p class="text-xs text-gray-500 mb-3">Date: ${new Date(request.request_date).toLocaleDateString()}</p>
+                    <div class="flex space-x-2">
+                        <button onclick="approveRequest(${request.request_id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                            <i class="fas fa-check mr-1"></i>Approve
+                        </button>
+                        <button onclick="rejectRequest(${request.request_id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                            <i class="fas fa-times mr-1"></i>Reject
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        async function approveRequest(requestId) {
+            await processRequest(requestId, 'approve');
+        }
+        
+        async function rejectRequest(requestId) {
+            await processRequest(requestId, 'reject');
+        }
+        
+        async function processRequest(requestId, action) {
+            try {
+                const response = await fetch(`${API_BASE}/hod/requests/${requestId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ action })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast(`Request ${action}d successfully!`, 'success');
+                    loadPendingRequests();
+                    loadStudents();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Error processing request: ' + error.message, 'error');
+            }
+        }
+        
+        // Faculty functions
+        async function requestSuspension() {
+            const studentId = document.getElementById('requestSuspendId').value;
+            const reason = document.getElementById('requestReason').value;
+            
+            if (!studentId || !reason) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/faculty/suspend/${studentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ reason })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast('Suspension request submitted successfully!', 'success');
+                    // Clear form
+                    document.getElementById('requestSuspendId').value = '';
+                    document.getElementById('requestReason').value = '';
+                    loadMyRequests();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Error submitting request: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadMyRequests() {
+            try {
+                const response = await fetch(`${API_BASE}/faculty/requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayMyRequests(data.requests);
+                } else {
+                    showToast('Failed to load requests', 'error');
+                }
+            } catch (error) {
+                showToast('Error loading requests: ' + error.message, 'error');
+            }
+        }
+        
+        function displayMyRequests(requests) {
+            const container = document.getElementById('myRequests');
+            container.innerHTML = '';
+            
+            if (requests.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-inbox text-2xl mb-2"></i>
+                        <p>No requests found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            requests.forEach(request => {
+                const statusColor = request.status === 'PENDING' ? 'yellow' : 
+                                  request.status === 'APPROVED' ? 'green' : 'red';
+                const statusIcon = request.status === 'PENDING' ? 'clock' : 
+                                 request.status === 'APPROVED' ? 'check' : 'times';
+                
+                const div = document.createElement('div');
+                div.className = `bg-gray-50 rounded-lg p-4 border-l-4 border-${statusColor}-500`;
+                div.innerHTML = `
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${request.student_name} (ID: ${request.student_id})</h4>
+                        </div>
+                        <span class="px-2 py-1 bg-${statusColor}-100 text-${statusColor}-800 text-xs rounded-full">
+                            ${request.status}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-700 mb-3">${request.suspension_reason}</p>
+                    <p class="text-xs text-gray-500">Date: ${new Date(request.request_date).toLocaleDateString()}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // Authentication
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showToast('Please enter both username and password', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentUser = data.user;
+                    currentToken = data.token;
+                    
+                    document.getElementById('userName').textContent = currentUser.full_name;
+                    document.getElementById('userType').textContent = currentUser.user_type;
+                    document.getElementById('userInfo').classList.remove('hidden');
+                    document.getElementById('loginSection').classList.add('hidden');
+                    
+                    // Show appropriate controls
+                    if (currentUser.user_type === 'HOD') {
+                        document.getElementById('hodBtn').classList.remove('hidden');
+                        document.getElementById('facultyBtn').classList.remove('hidden');
+                    } else if (currentUser.user_type === 'FACULTY') {
+                        document.getElementById('facultyBtn').classList.remove('hidden');
+                    }
+                    
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    
+                    showToast('Login successful!', 'success');
+                    showPublicView();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('Login failed: ' + error.message, 'error');
+            }
+        }
+        
+        function logout() {
+            currentUser = null;
+            currentToken = null;
+            
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('hodBtn').classList.add('hidden');
+            document.getElementById('facultyBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            
+            showToast('Logged out successfully', 'info');
+            showPublicView();
+        }
+        
+        // Data loading functions
+        async function loadStudents() {
+            try {
+                const response = await fetch(`${API_BASE}/students`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayStudents(data.students);
+                } else {
+                    showToast('Failed to load students', 'error');
+                }
+            } catch (error) {
+                showToast('Error loading students: ' + error.message, 'error');
+            }
+        }
+        
+        function displayStudents(students) {
+            const grid = document.getElementById('studentsGrid');
+            grid.innerHTML = '';
+            
+            if (students.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center text-gray-500 py-12">
+                        <i class="fas fa-users text-3xl mb-4"></i>
+                        <p>No students found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            students.forEach(student => {
+                const isSuspended = student.status === 'SUSPENDED';
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-xl shadow-lg p-6 transition-all hover:shadow-xl ${
+                    isSuspended ? 'border-l-4 border-red-500 bg-red-50' : 'border-l-4 border-green-500'
+                }`;
+                
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">${student.full_name}</h3>
+                            <p class="text-sm text-gray-500">ID: ${student.student_id}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                            isSuspended 
+                                ? 'bg-red-100 text-red-800' 
+                                : 'bg-green-100 text-green-800'
+                        }">
+                            ${student.status}
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex items-center">
+                            <i class="fas fa-building mr-2 text-blue-600"></i>
+                            <span>${student.department}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-layer-group mr-2 text-blue-600"></i>
+                            <span>Section: ${student.section}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar mr-2 text-blue-600"></i>
+                            <span>Batch: ${student.batch_year}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-venus-mars mr-2 text-blue-600"></i>
+                            <span>${student.gender}</span>
+                        </div>
+                    </div>
+                    
+                    ${student.suspension_reason ? `
+                        <div class="mt-4 p-3 bg-red-100 rounded-lg">
+                            <div class="flex items-center text-red-800">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span class="text-sm font-medium">Suspension Reason:</span>
+                            </div>
+                            <p class="text-sm text-red-700 mt-1">${student.suspension_reason}</p>
+                        </div>
+                    ` : ''}
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            
+            toast.className = `${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 transform transition-all duration-300 translate-x-full`;
+            toast.innerHTML = `
+                <i class="fas fa-${icons[type]}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-auto">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
